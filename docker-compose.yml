@@ -1,0 +1,54 @@
+version: '3.7'
+
+services:
+  mysql:  
+    image: mysql:5.7
+    container_name: mysql
+    hostname: mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db_root_password
+      - MYSQL_DATABASE=appdb
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD_FILE=/run/secrets/db_password
+    restart: unless-stopped
+    ports:
+      - 127.0.0.1:3306:3306
+    volumes:
+      - mysql-data:/var/lib/mysql
+    secrets:
+      - db_root_password
+      - db_password
+
+  app:
+    build: ./back
+    container_name: app
+    hostname: app
+    restart: unless-stopped
+    volumes:
+      - ./back/src:/var/www/html
+    ports:
+      - "8080:80"
+    depends_on:
+      - mysql
+  
+  front:
+      build: ./front
+      container_name: front
+      hostname: front
+      volumes:
+      - /app/node_modules
+      - ./front:/app
+      ports:
+        - "3000:3000"
+
+secrets:
+  db_root_password:
+    file: db_root_password.txt
+  db_password:
+    file: db_password.txt
+
+volumes:
+  mysql-data:
+
+networks:
+  default:
