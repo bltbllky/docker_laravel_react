@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import InputBox from './InputBox';
+import List from './List';
 import './App.css';
 import API from './api/api';
 
@@ -6,11 +8,42 @@ const App = () => {
   const [list, setList] = useState([]);
   useEffect(() => {
     API.getList((resp, err) => {
-      console.log(resp);
       if (resp.result)
         setList(resp.data);
     })
   }, []);
+
+  const sendData = (val)=>{
+    if(val.trim().length<2)
+    {
+        alert('Lütfen metin giriniz')
+        return;
+    }
+    
+  
+    let sendingData ={
+      name:val,
+      status:1
+    };
+    API
+      .create(
+        sendingData,
+      (resp, err) => {
+      if (resp && resp.result){
+        console.log(resp)
+        var newList = list;
+        newList.push(sendingData)
+        
+        setList(newList);
+      }
+
+      setTimeout(() => {
+        console.log(list)
+      }, 100);
+        
+    })
+    
+  }
 
   return <div className="App">
             <h2>
@@ -18,26 +51,8 @@ const App = () => {
             </h2>
             <p />
             <div>
-              <input className="FormInput" />
-              <button
-                type="button"
-              >
-                ekle
-            </button>
-              <div className="List" >
-              {
-                list && list.length > 0 &&
-                list.map((item, i) => {
-                  return <div
-                    className="ListItem"
-                    key={i}>
-                    <p>
-                      {item.name}
-                    </p>
-                  </div>
-                })
-              }
-              </div>
+            <InputBox sendData={(val)=>sendData(val)} />
+            <List data={list} />
             </div>
           </div>
 
